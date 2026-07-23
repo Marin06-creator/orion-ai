@@ -15,15 +15,23 @@ function ChatWindow() {
     }
   ])
 
-  function handleSend(message: string) {
-    const newMessage: ChatMessage = {
-      sender: "user",
-      text: message
-    }
-
-    setMessages([...messages, newMessage])
+function handleSend(message: string) {
+  const userMessage: ChatMessage = {
+    sender: "user",
+    text: message
   }
 
+  setMessages((prev) => [...prev, userMessage])
+
+  setTimeout(() => {
+    const orionMessage: ChatMessage = {
+      sender: "orion",
+      text: "Hola Luis, recibí tu mensaje. Estoy funcionando 🚀"
+    }
+
+    setMessages((prev) => [...prev, orionMessage])
+  }, 800)
+}
   return (
     <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-6">
       <h2 className="text-2xl font-bold text-blue-400">
