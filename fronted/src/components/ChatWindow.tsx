@@ -1,4 +1,5 @@
 import Message from "./Message"
+import InputBox from "./InputBox"
 
 function ChatWindow() {
   return (
@@ -18,6 +19,8 @@ function ChatWindow() {
           text="Quiero construir una inteligencia artificial."
         />
       </div>
+
+      <InputBox />
     </div>
   )
 }
