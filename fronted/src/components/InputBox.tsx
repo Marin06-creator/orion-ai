@@ -20,6 +20,11 @@ function InputBox({ onSend }: InputBoxProps) {
         type="text"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+           handleSend()
+        } 
+      }}
         placeholder="Escribe un mensaje..."
         className="flex-1 bg-gray-700 text-white rounded-xl px-4 py-3 outline-none"
       />

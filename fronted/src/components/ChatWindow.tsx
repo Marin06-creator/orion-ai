@@ -1,6 +1,7 @@
 import { useState } from "react"
 import Message from "./Message"
 import InputBox from "./InputBox"
+import { getOrionResponse } from "../utils/orionBrain"
 
 interface ChatMessage {
   sender: "user" | "orion"
@@ -9,11 +10,13 @@ interface ChatMessage {
 
 function ChatWindow() {
   const [messages, setMessages] = useState<ChatMessage[]>([
+  
     {
       sender: "orion",
       text: "Hola Luis, soy ORION. ¿En qué puedo ayudarte?"
     }
   ])
+ const [isThinking, setIsThinking] = useState(false)
 
 function handleSend(message: string) {
   const userMessage: ChatMessage = {
@@ -22,14 +25,15 @@ function handleSend(message: string) {
   }
 
   setMessages((prev) => [...prev, userMessage])
-
+  setIsThinking(true)
   setTimeout(() => {
     const orionMessage: ChatMessage = {
       sender: "orion",
-      text: "Hola Luis, recibí tu mensaje. Estoy funcionando 🚀"
-    }
+      text: getOrionResponse(message)
+}
 
     setMessages((prev) => [...prev, orionMessage])
+    setIsThinking(false)
   }, 800)
 }
   return (
@@ -46,6 +50,12 @@ function handleSend(message: string) {
             text={message.text}
           />
         ))}
+
+         {isThinking && (
+    <div className="text-gray-400 mt-2">
+      ORION está pensando...
+    </div>
+  )}
       </div>
 
       <InputBox onSend={handleSend} />
