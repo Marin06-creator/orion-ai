@@ -2,6 +2,7 @@ import { useState } from "react"
 import Message from "./Message"
 import InputBox from "./InputBox"
 import { getOrionResponse } from "../utils/orionBrain"
+import { supabase } from "../lib/supabase"
 
 interface ChatMessage {
   sender: "user" | "orion"
@@ -43,7 +44,7 @@ function ChatWindow() {
     setMessages((prev) => [...prev, userMessage])
     setIsThinking(true)
 
-    setTimeout(() => {
+    setTimeout(async () => {
       let response = ""
 
       const text = message.toLowerCase().trim()
@@ -100,23 +101,43 @@ function ChatWindow() {
       }
 
       // Guardar nombre y confirmar
-      else if (bookingStep === 4) {
-        const completedBooking = {
-          ...booking,
-          customerName: message
-        }
+     // Guardar nombre y confirmar
+else if (bookingStep === 4) {
+  const completedBooking = {
+    ...booking,
+    customerName: message
+  }
 
-        setBooking(completedBooking)
+  setBooking(completedBooking)
 
-        response =
-          `✅ Cita registrada:\n\n` +
-          `Cliente: ${completedBooking.customerName}\n` +
-          `Servicio: ${completedBooking.service}\n` +
-          `Día: ${completedBooking.day}\n` +
-          `Hora: ${completedBooking.time}`
-
-        setBookingStep(0)
+  const { error } = await supabase
+    .from("bookings")
+    .insert([
+      {
+        customer_name: completedBooking.customerName,
+        service: completedBooking.service,
+        booking_date: "2026-09-04",
+        booking_time: completedBooking.time,
+        status: "pending"
       }
+    ])
+
+  if (error) {
+    console.error("Error guardando reserva:", error)
+
+    response =
+      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+  } else {
+    response =
+      `✅ Cita registrada:\n\n` +
+      `Cliente: ${completedBooking.customerName}\n` +
+      `Servicio: ${completedBooking.service}\n` +
+      `Día: ${completedBooking.day}\n` +
+      `Hora: ${completedBooking.time}`
+  }
+
+  setBookingStep(0)
+}
 
       // Conversación normal
       else {
