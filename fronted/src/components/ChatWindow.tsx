@@ -77,17 +77,26 @@ function ChatWindow() {
       }
 
       // Guardar día
-      else if (bookingStep === 2) {
-        setBooking((prev) => ({
-          ...prev,
-          day: message
-        }))
+     else if (bookingStep === 2) {
+  const parts = message.split("/")
 
-        response = "Muy bien. ¿A qué hora deseas la cita?"
+  if (parts.length !== 3) {
+    response = "Por favor escribe la fecha en formato DD/MM/AAAA. Ejemplo: 03/09/2026."
+  } else {
+    const [day, month, year] = parts
 
-        setBookingStep(3)
-      }
+    const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
 
+    setBooking((prev) => ({
+      ...prev,
+      day: formattedDate
+    }))
+
+    response = "Muy bien. ¿A qué hora deseas la cita? Usa formato 24 horas. Ejemplo: 15:00."
+
+    setBookingStep(3)
+  }
+}
       // Guardar hora
       else if (bookingStep === 3) {
         setBooking((prev) => ({
@@ -116,7 +125,7 @@ else if (bookingStep === 4) {
       {
         customer_name: completedBooking.customerName,
         service: completedBooking.service,
-        booking_date: "2026-09-04",
+        booking_date: completedBooking.day,
         booking_time: completedBooking.time,
         status: "pending"
       }
@@ -125,14 +134,19 @@ else if (bookingStep === 4) {
   if (error) {
     console.error("Error guardando reserva:", error)
 
-    response =
-      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+    if (error.code === "23505") {
+      response =
+        "❌ Ese horario ya está reservado. Por favor intenta nuevamente con otra hora."
+    } else {
+      response =
+        "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+    }
   } else {
     response =
       `✅ Cita registrada:\n\n` +
       `Cliente: ${completedBooking.customerName}\n` +
       `Servicio: ${completedBooking.service}\n` +
-      `Día: ${completedBooking.day}\n` +
+      `Fecha: ${completedBooking.day}\n` +
       `Hora: ${completedBooking.time}`
   }
 
