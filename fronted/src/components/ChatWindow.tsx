@@ -131,26 +131,33 @@ else if (bookingStep === 4) {
       }
     ])
 
-  if (error) {
-    console.error("Error guardando reserva:", error)
+ if (error) {
+  console.error("Error guardando reserva:", error)
 
-    if (error.code === "23505") {
-      response =
-        "❌ Ese horario ya está reservado. Por favor intenta nuevamente con otra hora."
-    } else {
-      response =
-        "Hubo un problema al guardar la cita. Inténtalo nuevamente."
-    }
+  if (error.code === "23505") {
+    response =
+      `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+      `Escribe otra hora disponible. Ejemplo: 16:00.`
+
+    setBookingStep(3)
   } else {
+    response =
+      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+
+    setBookingStep(0)
+  }
+} else {
     response =
       `✅ Cita registrada:\n\n` +
       `Cliente: ${completedBooking.customerName}\n` +
       `Servicio: ${completedBooking.service}\n` +
       `Fecha: ${completedBooking.day}\n` +
       `Hora: ${completedBooking.time}`
+
+      setBookingStep(0)
   }
 
-  setBookingStep(0)
+  
 }
 
       // Conversación normal
