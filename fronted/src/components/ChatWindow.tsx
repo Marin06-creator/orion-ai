@@ -28,12 +28,6 @@ const allTimes: string[] = [
   "18:00"
 ]
 
-function getAvailableTimes(bookedTimes: string[]): string[] {
-  return allTimes.filter(
-    (time: string) => !bookedTimes.includes(time)
-  )
-}
-
 function ChatWindow() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -170,17 +164,38 @@ else if (bookingStep === 4) {
 
   if (error) {
     if (error.code === "23505") {
-      const bookedTimes: string[] = ["15:00", "17:00"]
+      const { data: bookedData, error: bookedError } = await supabase
+  .rpc("get_booked_times", {
+    p_date: completedBooking.day
+  })
 
-      const availableTimes = getAvailableTimes(bookedTimes)
+if (bookedError) {
+  console.error("Error consultando horarios:", bookedError)
 
-      response =
-        `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
-        `Horarios disponibles:\n` +
-        availableTimes.map((time) => `• ${time}`).join("\n") +
-        `\n\nEscribe la hora que prefieras.`
+  response =
+    "No pude consultar los horarios disponibles. Inténtalo nuevamente."
 
-      setBookingStep(3)
+  setBookingStep(3)
+} else {
+  const bookedTimes = (bookedData ?? []).map(
+  (item: { booking_time: string }) => {
+    return String(item.booking_time).slice(0, 5)
+  }
+)
+
+const availableTimes = allTimes.filter(
+  (time) => !bookedTimes.includes(time)
+)
+
+  response =
+    `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+    `Horarios disponibles:\n` +
+    availableTimes.map((time) => `• ${time}`).join("\n") +
+    `\n\nEscribe la hora que prefieras.`
+
+  setBookingStep(3)
+}
+
     } else {
       console.error("Error guardando reserva:", error)
 
