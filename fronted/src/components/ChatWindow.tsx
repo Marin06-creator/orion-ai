@@ -15,6 +15,24 @@ interface Booking {
   time: string
   customerName: string
 }
+const allTimes: string[] = [
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00"
+]
+
+function getAvailableTimes(bookedTimes: string[]): string[] {
+  return allTimes.filter(
+    (time: string) => !bookedTimes.includes(time)
+  )
+}
 
 function ChatWindow() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -131,22 +149,28 @@ else if (bookingStep === 4) {
       }
     ])
 
- if (error) {
-  console.error("Error guardando reserva:", error)
+  if (error) {
+    if (error.code === "23505") {
+      const bookedTimes: string[] = ["15:00", "17:00"]
 
-  if (error.code === "23505") {
-    response =
-      `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
-      `Escribe otra hora disponible. Ejemplo: 16:00.`
+      const availableTimes = getAvailableTimes(bookedTimes)
 
-    setBookingStep(3)
+      response =
+        `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+        `Horarios disponibles:\n` +
+        availableTimes.map((time) => `• ${time}`).join("\n") +
+        `\n\nEscribe la hora que prefieras.`
+
+      setBookingStep(3)
+    } else {
+      console.error("Error guardando reserva:", error)
+
+      response =
+        "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+
+      setBookingStep(0)
+    }
   } else {
-    response =
-      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
-
-    setBookingStep(0)
-  }
-} else {
     response =
       `✅ Cita registrada:\n\n` +
       `Cliente: ${completedBooking.customerName}\n` +
@@ -154,11 +178,10 @@ else if (bookingStep === 4) {
       `Fecha: ${completedBooking.day}\n` +
       `Hora: ${completedBooking.time}`
 
-      setBookingStep(0)
+    setBookingStep(0)
   }
-
-  
 }
+
 
       // Conversación normal
       else {
