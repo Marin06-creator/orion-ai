@@ -6,6 +6,12 @@ import {
   createBooking,
   getBookedTimes
 } from "../services/bookingService"
+import {
+  isValidTimeFormat,
+  isWithinBusinessHours
+  } from "../utils/bookingvalidation.ts"
+
+
 
 
 interface ChatMessage {
@@ -115,33 +121,22 @@ function ChatWindow() {
   }
 }
       // Guardar hora
- else if (bookingStep === 3) {
-  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
-
-  if (!timeRegex.test(message)) {
+else if (bookingStep === 3) {
+  if (!isValidTimeFormat(message)) {
     response =
       "⚠️ Esa hora no es válida. Escríbela en formato 24 horas. Ejemplo: 15:00."
+  } else if (!isWithinBusinessHours(message)) {
+    response =
+      "⚠️ Ese horario está fuera del horario de atención.\n\n" +
+      "Puedes reservar entre 09:00 y 18:00."
   } else {
-    const [hour, minute] = message.split(":").map(Number)
+    setBooking((prev) => ({
+      ...prev,
+      time: message
+    }))
 
-    const totalMinutes = hour * 60 + minute
-
-    const openingTime = 9 * 60
-    const closingTime = 18 * 60
-
-    if (totalMinutes < openingTime || totalMinutes > closingTime) {
-      response =
-        "⚠️ Ese horario está fuera del horario de atención.\n\n" +
-        "Puedes reservar entre 09:00 y 18:00."
-    } else {
-      setBooking((prev) => ({
-        ...prev,
-        time: message
-      }))
-
-      response = "Perfecto. ¿A nombre de quién hacemos la reserva?"
-      setBookingStep(4)
-    }
+    response = "Perfecto. ¿A nombre de quién hacemos la reserva?"
+    setBookingStep(4)
   }
 }
 
