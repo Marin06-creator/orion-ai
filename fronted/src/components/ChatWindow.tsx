@@ -11,6 +11,7 @@ import {
   isWithinBusinessHours,
   isValidBookingDate
 } from "../utils/bookingvalidation"
+import  QuickOptions from "./QuickOptions"
 
 
 
@@ -46,6 +47,7 @@ function ChatWindow() {
       text: "¡Hola! Soy ORION, asistente de Barbería Central. ¿En qué puedo ayudarte?"
     }
   ])
+  const [availableTimes, setAvailableTimes] = useState<string[]>([])
 
   const [isThinking, setIsThinking] = useState(false)
 
@@ -169,17 +171,19 @@ else if (bookingStep === 4) {
 
       setBookingStep(3)
     } else {
-      const availableTimes = allTimes.filter(
+      const freeTimes = allTimes.filter(
         (time) => !bookedTimes.includes(time)
-      )
-
+)
+      setAvailableTimes(freeTimes)
+        
       response =
         `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
         `Horarios disponibles:\n` +
-        availableTimes.map((time) => `• ${time}`).join("\n") +
+        freeTimes.map((time) => `• ${time}`).join("\n") +
         `\n\nEscribe la hora que prefieras.`
 
       setBookingStep(3)
+      
     }
   } else {
     console.error("Error guardando reserva:", error)
@@ -231,6 +235,25 @@ else if (bookingStep === 4) {
             text={message.text}
           />
         ))}
+        {bookingStep === 1 && (
+  <QuickOptions
+    options={[
+      "Corte clásico",
+      "Corte + barba",
+      "Barba"
+    ]}
+    onSelect={handleSend}
+  />
+)}
+{bookingStep === 3 && availableTimes.length > 0 && (
+  <QuickOptions
+    options={availableTimes}
+    onSelect={(time) => {
+      setAvailableTimes([])
+      handleSend(time)
+    }}
+  />
+)}
 
         {isThinking && (
           <div className="text-gray-400 mt-2">
