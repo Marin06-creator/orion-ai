@@ -12,3 +12,33 @@ export function isWithinBusinessHours(time: string): boolean {
 
   return totalMinutes >= openingTime && totalMinutes <= closingTime
 }
+export function isValidDateFormat(date: string): boolean {
+  const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/
+  return dateRegex.test(date)
+}
+
+export function isValidBookingDate(date: string): boolean {
+  if (!isValidDateFormat(date)) {
+    return false
+  }
+
+  const [day, month, year] = date.split("/").map(Number)
+
+  const parsedDate = new Date(year, month - 1, day)
+
+  const isRealDate =
+    parsedDate.getFullYear() === year &&
+    parsedDate.getMonth() === month - 1 &&
+    parsedDate.getDate() === day
+
+  if (!isRealDate) {
+    return false
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  parsedDate.setHours(0, 0, 0, 0)
+
+  return parsedDate >= today
+}

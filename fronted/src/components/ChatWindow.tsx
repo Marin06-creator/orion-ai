@@ -8,8 +8,9 @@ import {
 } from "../services/bookingService"
 import {
   isValidTimeFormat,
-  isWithinBusinessHours
-  } from "../utils/bookingvalidation.ts"
+  isWithinBusinessHours,
+  isValidBookingDate
+} from "../utils/bookingvalidation"
 
 
 
@@ -100,22 +101,23 @@ function ChatWindow() {
       }
 
       // Guardar día
-     else if (bookingStep === 2) {
-  const parts = message.split("/")
-
-  if (parts.length !== 3) {
-    response = "Por favor escribe la fecha en formato DD/MM/AAAA. Ejemplo: 03/09/2026."
+ else if (bookingStep === 2) {
+  if (!isValidBookingDate(message)) {
+    response =
+      "⚠️ Esa fecha no es válida. Usa formato DD/MM/AAAA y elige una fecha de hoy en adelante. Ejemplo: 05/09/2026."
   } else {
-    const [day, month, year] = parts
+    const [day, month, year] = message.split("/")
 
-    const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+    const formattedDate =
+      `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
 
     setBooking((prev) => ({
       ...prev,
       day: formattedDate
     }))
 
-    response = "Muy bien. ¿A qué hora deseas la cita? Usa formato 24 horas. Ejemplo: 15:00."
+    response =
+      "Muy bien. ¿A qué hora deseas la cita? Usa formato 24 horas. Ejemplo: 15:00."
 
     setBookingStep(3)
   }
