@@ -1,17 +1,22 @@
 import { useState } from "react"
 import Message from "./Message"
 import InputBox from "./InputBox"
+import  QuickOptions from "./QuickOptions"
+import ServiceOptions from "./ServiceOptions"
 import { getOrionResponse } from "../utils/orionBrain"
+import { businessData } from "../data/businessData"
+
 import {
   createBooking,
   getBookedTimes
 } from "../services/bookingService"
+
 import {
   isValidTimeFormat,
   isWithinBusinessHours,
   isValidBookingDate
 } from "../utils/bookingvalidation"
-import  QuickOptions from "./QuickOptions"
+
 
 
 
@@ -236,12 +241,8 @@ else if (bookingStep === 4) {
           />
         ))}
         {bookingStep === 1 && (
-  <QuickOptions
-    options={[
-      "Corte clásico",
-      "Corte + barba",
-      "Barba"
-    ]}
+  <ServiceOptions
+    services={businessData.services}
     onSelect={handleSend}
   />
 )}
