@@ -2,7 +2,11 @@ import { useState } from "react"
 import Message from "./Message"
 import InputBox from "./InputBox"
 import { getOrionResponse } from "../utils/orionBrain"
-import { supabase } from "../lib/supabase"
+import {
+  createBooking,
+  getBookedTimes
+} from "../services/bookingService"
+
 
 interface ChatMessage {
   sender: "user" | "orion"
@@ -67,7 +71,8 @@ function ChatWindow() {
         (
           text.includes("reservar") ||
           text.includes("cita") ||
-          text.includes("agendar")
+          text.includes("agendar") ||
+          text.includes("hacer")
         )
       ) {
         response =
@@ -150,70 +155,53 @@ else if (bookingStep === 4) {
 
   setBooking(completedBooking)
 
-  const { error } = await supabase
-    .from("bookings")
-    .insert([
-      {
-        customer_name: completedBooking.customerName,
-        service: completedBooking.service,
-        booking_date: completedBooking.day,
-        booking_time: completedBooking.time,
-        status: "pending"
-      }
-    ])
+  const { error } = await createBooking(completedBooking)
 
   if (error) {
-    if (error.code === "23505") {
-      const { data: bookedData, error: bookedError } = await supabase
-  .rpc("get_booked_times", {
-    p_date: completedBooking.day
-  })
+  if (error.code === "23505") {
+    const {
+      bookedTimes,
+      error: bookedError
+    } = await getBookedTimes(completedBooking.day)
 
-if (bookedError) {
-  console.error("Error consultando horarios:", bookedError)
-
-  response =
-    "No pude consultar los horarios disponibles. Inténtalo nuevamente."
-
-  setBookingStep(3)
-} else {
-  const bookedTimes = (bookedData ?? []).map(
-  (item: { booking_time: string }) => {
-    return String(item.booking_time).slice(0, 5)
-  }
-)
-
-const availableTimes = allTimes.filter(
-  (time) => !bookedTimes.includes(time)
-)
-
-  response =
-    `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
-    `Horarios disponibles:\n` +
-    availableTimes.map((time) => `• ${time}`).join("\n") +
-    `\n\nEscribe la hora que prefieras.`
-
-  setBookingStep(3)
-}
-
-    } else {
-      console.error("Error guardando reserva:", error)
+    if (bookedError) {
+      console.error("Error consultando horarios:", bookedError)
 
       response =
-        "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+        "No pude consultar los horarios disponibles. Inténtalo nuevamente."
 
-      setBookingStep(0)
+      setBookingStep(3)
+    } else {
+      const availableTimes = allTimes.filter(
+        (time) => !bookedTimes.includes(time)
+      )
+
+      response =
+        `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+        `Horarios disponibles:\n` +
+        availableTimes.map((time) => `• ${time}`).join("\n") +
+        `\n\nEscribe la hora que prefieras.`
+
+      setBookingStep(3)
     }
   } else {
+    console.error("Error guardando reserva:", error)
+
     response =
-      `✅ Cita registrada:\n\n` +
-      `Cliente: ${completedBooking.customerName}\n` +
-      `Servicio: ${completedBooking.service}\n` +
-      `Fecha: ${completedBooking.day}\n` +
-      `Hora: ${completedBooking.time}`
+      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
 
     setBookingStep(0)
   }
+} else {
+  response =
+    `✅ Cita registrada:\n\n` +
+    `Cliente: ${completedBooking.customerName}\n` +
+    `Servicio: ${completedBooking.service}\n` +
+    `Fecha: ${completedBooking.day}\n` +
+    `Hora: ${completedBooking.time}`
+
+  setBookingStep(0)
+}
 }
 
 
