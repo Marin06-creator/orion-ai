@@ -235,10 +235,13 @@ else if (bookingStep === 3) {
   if (!isValidTimeFormat(message)) {
     response =
       "⚠️ Esa hora no es válida. Escríbela en formato 24 horas. Ejemplo: 15:00."
-  } else if (!isWithinBusinessHours(message)) {
-    response =
-      "⚠️ Ese horario está fuera del horario de atención.\n\n" +
-      "Puedes reservar entre 09:00 y 18:00."
+ } else if (!isWithinBusinessHours(booking.day, message)) {
+  response =
+    "⚠️ Ese horario no está disponible para ese día.\n\n" +
+    "Horario:\n" +
+    "Lunes a viernes: 09:00 - 19:00\n" +
+    "Sábado: 09:00 - 17:00\n" +
+    "Domingo: Cerrado."
   } else {
     setBooking((prev) => ({
       ...prev,
