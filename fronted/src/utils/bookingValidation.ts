@@ -63,3 +63,21 @@ export function isValidBookingDate(date: string): boolean {
 
   return parsedDate >= today
 }
+export function isValidService(
+  service: string,
+  validServices: string[]
+): boolean {
+  return validServices.includes(service)
+}
+
+export function isValidCustomerName(name: string): boolean {
+  const trimmedName = name.trim()
+
+  if (trimmedName.length < 2 || trimmedName.length > 50) {
+    return false
+  }
+
+  const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/
+
+  return nameRegex.test(trimmedName)
+}

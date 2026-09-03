@@ -15,7 +15,9 @@ import {
 import {
   isValidTimeFormat,
   isWithinBusinessHours,
-  isValidBookingDate
+  isValidBookingDate,
+  isValidService,
+  isValidCustomerName
 } from "../utils/bookingValidation"
 
 
@@ -197,17 +199,26 @@ function handleCancelBooking() {
       }
 
       // Guardar servicio
-      else if (bookingStep === 1) {
-        setBooking((prev) => ({
-          ...prev,
-          service: message
-        }))
+else if (bookingStep === 1) {
+  const validServices = businessData.services.map(
+    (service) => service.name
+  )
 
-        response = "Perfecto. ¿Para qué día deseas reservar?"
+  if (!isValidService(message, validServices)) {
+    response =
+      "⚠️ Ese servicio no es válido. Elige una de las opciones disponibles."
+  } else {
+    setBooking((prev) => ({
+      ...prev,
+      service: message
+    }))
 
-        setBookingStep(2)
-      }
+    response =
+      "Perfecto. ¿Qué día deseas reservar? Usa formato DD/MM/AAAA."
 
+    setBookingStep(2)
+  }
+}
       // Guardar día
  else if (bookingStep === 2) {
   if (!isValidBookingDate(message)) {
@@ -256,18 +267,23 @@ else if (bookingStep === 3) {
       // Guardar nombre y confirmar
      // Guardar nombre y confirmar
 else if (bookingStep === 4) {
-  const completedBooking = {
-    ...booking,
-    customerName: message
+  if (!isValidCustomerName(message)) {
+    response =
+      "⚠️ El nombre no es válido. Escribe un nombre de al menos 2 letras y sin números."
+  } else {
+    const completedBooking = {
+      ...booking,
+      customerName: message.trim()
+    }
+
+    setBooking(completedBooking)
+
+    response =
+      "Revisa los datos de tu reserva antes de confirmar."
+
+    setShowConfirmation(true)
+    setBookingStep(5)
   }
-
-  setBooking(completedBooking)
-
-  response =
-    "Revisa los datos de tu reserva antes de confirmar."
-
-  setShowConfirmation(true)
-  setBookingStep(5)
 }
 
 
