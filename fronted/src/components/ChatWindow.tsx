@@ -5,6 +5,7 @@ import  QuickOptions from "./QuickOptions"
 import ServiceOptions from "./ServiceOptions"
 import { getOrionResponse } from "../utils/orionBrain"
 import { businessData } from "../data/businessData"
+import BookingConfirmation from "./BookingConfirmation"
 
 import {
   createBooking,
@@ -15,7 +16,7 @@ import {
   isValidTimeFormat,
   isWithinBusinessHours,
   isValidBookingDate
-} from "../utils/bookingvalidation"
+} from "../utils/bookingValidation"
 
 
 
@@ -68,8 +69,102 @@ function ChatWindow() {
   useEffect(() => {
   messagesEndRef.current?.scrollIntoView({
     behavior: "smooth"
+  })}, [messages, isThinking, bookingStep, availableTimes])
+  const [showConfirmation, setShowConfirmation] = useState(false)
+
+  async function handleConfirmBooking() {
+  const completedBooking = booking
+
+  const { error } = await createBooking(completedBooking)
+
+  if (error) {
+    if (error.code === "23505") {
+      const {
+        bookedTimes,
+        error: bookedError
+      } = await getBookedTimes(completedBooking.day)
+
+      if (bookedError) {
+        console.error("Error consultando horarios:", bookedError)
+
+        const orionMessage: ChatMessage = {
+          sender: "orion",
+          text:
+            "No pude consultar los horarios disponibles. Inténtalo nuevamente."
+        }
+
+        setMessages((prev) => [...prev, orionMessage])
+        setBookingStep(3)
+      } else {
+        const freeTimes = allTimes.filter(
+          (time) => !bookedTimes.includes(time)
+        )
+
+        setAvailableTimes(freeTimes)
+
+        const orionMessage: ChatMessage = {
+          sender: "orion",
+          text:
+            `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+            `Horarios disponibles:\n` +
+            freeTimes.map((time) => `• ${time}`).join("\n") +
+            `\n\nElige otra hora.`
+        }
+
+        setMessages((prev) => [...prev, orionMessage])
+        setBookingStep(3)
+      }
+
+      setShowConfirmation(false)
+    } else {
+      console.error("Error guardando reserva:", error)
+
+      const orionMessage: ChatMessage = {
+        sender: "orion",
+        text:
+          "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+      }
+
+      setMessages((prev) => [...prev, orionMessage])
+      setBookingStep(0)
+      setShowConfirmation(false)
+    }
+  } else {
+    const orionMessage: ChatMessage = {
+      sender: "orion",
+      text:
+        `✅ Cita registrada:\n\n` +
+        `Cliente: ${completedBooking.customerName}\n` +
+        `Servicio: ${completedBooking.service}\n` +
+        `Fecha: ${completedBooking.day}\n` +
+        `Hora: ${completedBooking.time}`
+    }
+
+    setMessages((prev) => [...prev, orionMessage])
+
+    setShowConfirmation(false)
+    setBookingStep(0)
+  }
+}
+function handleCancelBooking() {
+  setShowConfirmation(false)
+
+  setBooking({
+    service: "",
+    day: "",
+    time: "",
+    customerName: ""
   })
-}, [messages, isThinking, bookingStep, availableTimes])
+
+  setBookingStep(0)
+
+  const orionMessage: ChatMessage = {
+    sender: "orion",
+    text: "Reserva cancelada. Puedes comenzar de nuevo cuando quieras."
+  }
+
+  setMessages((prev) => [...prev, orionMessage])
+}
 
   function handleSend(message: string) {
     const userMessage: ChatMessage = {
@@ -165,55 +260,11 @@ else if (bookingStep === 4) {
 
   setBooking(completedBooking)
 
-  const { error } = await createBooking(completedBooking)
-
-  if (error) {
-  if (error.code === "23505") {
-    const {
-      bookedTimes,
-      error: bookedError
-    } = await getBookedTimes(completedBooking.day)
-
-    if (bookedError) {
-      console.error("Error consultando horarios:", bookedError)
-
-      response =
-        "No pude consultar los horarios disponibles. Inténtalo nuevamente."
-
-      setBookingStep(3)
-    } else {
-      const freeTimes = allTimes.filter(
-        (time) => !bookedTimes.includes(time)
-)
-      setAvailableTimes(freeTimes)
-        
-      response =
-        `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
-        `Horarios disponibles:\n` +
-        freeTimes.map((time) => `• ${time}`).join("\n") +
-        `\n\nEscribe la hora que prefieras.`
-
-      setBookingStep(3)
-      
-    }
-  } else {
-    console.error("Error guardando reserva:", error)
-
-    response =
-      "Hubo un problema al guardar la cita. Inténtalo nuevamente."
-
-    setBookingStep(0)
-  }
-} else {
   response =
-    `✅ Cita registrada:\n\n` +
-    `Cliente: ${completedBooking.customerName}\n` +
-    `Servicio: ${completedBooking.service}\n` +
-    `Fecha: ${completedBooking.day}\n` +
-    `Hora: ${completedBooking.time}`
+    "Revisa los datos de tu reserva antes de confirmar."
 
-  setBookingStep(0)
-}
+  setShowConfirmation(true)
+  setBookingStep(5)
 }
 
 
@@ -259,6 +310,16 @@ else if (bookingStep === 4) {
       setAvailableTimes([])
       handleSend(time)
     }}
+  />
+)}
+{showConfirmation && (
+  <BookingConfirmation
+    customerName={booking.customerName}
+    service={booking.service}
+    day={booking.day}
+    time={booking.time}
+    onConfirm={handleConfirmBooking}
+    onCancel={handleCancelBooking}
   />
 )}
 
