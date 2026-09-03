@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Message from "./Message"
 import InputBox from "./InputBox"
 import  QuickOptions from "./QuickOptions"
@@ -64,6 +64,12 @@ function ChatWindow() {
     time: "",
     customerName: ""
   })
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({
+    behavior: "smooth"
+  })
+}, [messages, isThinking, bookingStep, availableTimes])
 
   function handleSend(message: string) {
     const userMessage: ChatMessage = {
@@ -256,11 +262,15 @@ else if (bookingStep === 4) {
   />
 )}
 
-        {isThinking && (
-          <div className="text-gray-400 mt-2">
-            ORION está pensando...
-          </div>
-        )}
+{isThinking && (
+  <div className="text-gray-400 mt-2">
+    ORION está pensando...
+  </div>
+)}
+
+<div ref={messagesEndRef} />
+
+    
       </div>
 
       <InputBox onSend={handleSend} />
