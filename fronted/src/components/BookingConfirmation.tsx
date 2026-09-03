@@ -3,6 +3,8 @@ interface BookingConfirmationProps {
   service: string
   day: string
   time: string
+  price : number
+  duration: number
   onConfirm: () => void
   onCancel: () => void
 }
@@ -12,6 +14,8 @@ function BookingConfirmation({
   service,
   day,
   time,
+  price,
+  duration,
   onConfirm,
   onCancel
 }: BookingConfirmationProps) {
@@ -31,6 +35,21 @@ function BookingConfirmation({
           <p className="text-xs text-gray-400">Servicio</p>
           <p className="font-semibold">{service}</p>
         </div>
+        <div className="flex gap-8">
+  <div>
+    <p className="text-xs text-gray-400">Precio</p>
+    <p className="font-semibold">
+      ₡{price.toLocaleString()}
+    </p>
+  </div>
+
+  <div>
+    <p className="text-xs text-gray-400">Duración</p>
+    <p className="font-semibold">
+      {duration} min
+    </p>
+  </div>
+</div>
 
         <div className="flex gap-8">
           <div>

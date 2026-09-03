@@ -312,16 +312,24 @@ else if (bookingStep === 4) {
     }}
   />
 )}
-{showConfirmation && (
-  <BookingConfirmation
-    customerName={booking.customerName}
-    service={booking.service}
-    day={booking.day}
-    time={booking.time}
-    onConfirm={handleConfirmBooking}
-    onCancel={handleCancelBooking}
-  />
-)}
+{showConfirmation && (() => {
+  const selectedService = businessData.services.find(
+    (service) => service.name === booking.service
+  )
+
+  return (
+    <BookingConfirmation
+      customerName={booking.customerName}
+      service={booking.service}
+      day={booking.day}
+      time={booking.time}
+      price={selectedService?.price ?? 0}
+      duration={selectedService?.duration ?? 0}
+      onConfirm={handleConfirmBooking}
+      onCancel={handleCancelBooking}
+    />
+  )
+})()}
 
 {isThinking && (
   <div className="text-gray-400 mt-2">
