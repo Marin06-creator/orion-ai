@@ -72,7 +72,22 @@ function hasTimeOverlap(
   return newStart < existingEnd && newEnd > existingStart
 }
 
-
+function getAvailableTimesByDuration(
+  times: string[],
+  newDuration: number,
+  intervals: { time: string; duration: number }[]
+): string[] {
+  return times.filter((time) => {
+    return !intervals.some((interval) =>
+      hasTimeOverlap(
+        time,
+        newDuration,
+        interval.time,
+        interval.duration
+      )
+    )
+  })
+}
 
 
 function ChatWindow() {
@@ -317,9 +332,20 @@ setBooking((prev) => ({
       )
 
       if (hasOverlap) {
-        response =
-          "❌ Esa hora se cruza con otra reserva. Elige otro horario."
-      } else {
+  const freeTimes = getAvailableTimesByDuration(
+    allTimes,
+    booking.duration,
+    intervals
+  )
+
+  setAvailableTimes(freeTimes)
+
+  response =
+    "❌ Esa hora se cruza con otra reserva.\n\n" +
+    "Horarios disponibles:\n" +
+    freeTimes.map((time) => `• ${time}`).join("\n") +
+    "\n\nElige otro horario."
+} else {
         setBooking((prev) => ({
           ...prev,
           time: message
