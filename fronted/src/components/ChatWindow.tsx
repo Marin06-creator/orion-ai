@@ -17,7 +17,8 @@ import {
   isWithinBusinessHours,
   isValidBookingDate,
   isValidService,
-  isValidCustomerName
+  isValidCustomerName,
+  isValidPhone
 } from "../utils/bookingValidation"
 
 
@@ -34,6 +35,7 @@ interface Booking {
   day: string
   time: string
   customerName: string
+  phone: string
 }
 const allTimes: string[] = [
   "09:00",
@@ -65,7 +67,8 @@ function ChatWindow() {
     service: "",
     day: "",
     time: "",
-    customerName: ""
+    customerName: "",
+    phone: ""
   })
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -137,6 +140,7 @@ function ChatWindow() {
       text:
         `✅ Cita registrada:\n\n` +
         `Cliente: ${completedBooking.customerName}\n` +
+        `Teléfono: ${completedBooking.phone}\n` +
         `Servicio: ${completedBooking.service}\n` +
         `Fecha: ${completedBooking.day}\n` +
         `Hora: ${completedBooking.time}`
@@ -155,7 +159,8 @@ function handleCancelBooking() {
     service: "",
     day: "",
     time: "",
-    customerName: ""
+    customerName: "",
+    phone: ""
   })
 
   setBookingStep(0)
@@ -271,9 +276,26 @@ else if (bookingStep === 4) {
     response =
       "⚠️ El nombre no es válido. Escribe un nombre de al menos 2 letras y sin números."
   } else {
+    setBooking((prev) => ({
+      ...prev,
+      customerName: message.trim()
+    }))
+
+    response =
+      "📱 ¿Cuál es tu número de teléfono o WhatsApp?"
+
+    setBookingStep(5)
+  }
+}
+
+  else if (bookingStep === 5) {
+  if (!isValidPhone(message)) {
+    response =
+      "⚠️ El número no es válido. Escribe entre 8 y 15 dígitos. Puedes incluir el código de país."
+  } else {
     const completedBooking = {
       ...booking,
-      customerName: message.trim()
+      phone: message.trim()
     }
 
     setBooking(completedBooking)
@@ -282,7 +304,7 @@ else if (bookingStep === 4) {
       "Revisa los datos de tu reserva antes de confirmar."
 
     setShowConfirmation(true)
-    setBookingStep(5)
+    setBookingStep(6)
   }
 }
 
@@ -344,6 +366,7 @@ else if (bookingStep === 4) {
       time={booking.time}
       price={selectedService?.price ?? 0}
       duration={selectedService?.duration ?? 0}
+      phone={booking.phone}
       onConfirm={handleConfirmBooking}
       onCancel={handleCancelBooking}
     />

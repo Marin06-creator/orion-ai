@@ -5,6 +5,7 @@ interface BookingData {
   service: string
   day: string
   time: string
+  phone: string
 }
 
 export async function createBooking(booking: BookingData) {
@@ -16,6 +17,7 @@ export async function createBooking(booking: BookingData) {
         service: booking.service,
         booking_date: booking.day,
         booking_time: booking.time,
+        phone: booking.phone,
         status: "pending"
       }
     ])

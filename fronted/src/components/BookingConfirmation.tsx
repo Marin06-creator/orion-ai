@@ -5,6 +5,7 @@ interface BookingConfirmationProps {
   time: string
   price : number
   duration: number
+  phone: string
   onConfirm: () => void
   onCancel: () => void
 }
@@ -16,6 +17,7 @@ function BookingConfirmation({
   time,
   price,
   duration,
+  phone,
   onConfirm,
   onCancel
 }: BookingConfirmationProps) {
@@ -63,6 +65,15 @@ function BookingConfirmation({
           </div>
         </div>
       </div>
+      <div>
+    <p className="text-xs text-gray-400">
+            Teléfono / WhatsApp
+        </p>
+
+    <p className="font-semibold">
+    {phone}
+    </p>
+        </div>
 
       <div className="flex gap-3 mt-5">
         <button
@@ -80,6 +91,7 @@ function BookingConfirmation({
         </button>
       </div>
     </div>
+    
   )
 }
 

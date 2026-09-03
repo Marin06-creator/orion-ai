@@ -81,3 +81,8 @@ export function isValidCustomerName(name: string): boolean {
 
   return nameRegex.test(trimmedName)
 }
+export function isValidPhone(phone: string): boolean {
+  const cleanPhone = phone.replace(/[\s-]/g, "")
+
+  return /^\+?\d{8,15}$/.test(cleanPhone)
+}
