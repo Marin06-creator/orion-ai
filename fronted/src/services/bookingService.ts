@@ -6,6 +6,7 @@ interface BookingData {
   day: string
   time: string
   phone: string
+  duration: number
 }
 
 export async function createBooking(booking: BookingData) {
@@ -18,6 +19,7 @@ export async function createBooking(booking: BookingData) {
         booking_date: booking.day,
         booking_time: booking.time,
         phone: booking.phone,
+        duration: booking.phone,
         status: "pending"
       }
     ])
@@ -43,6 +45,32 @@ export async function getBookedTimes(date: string) {
 
   return {
     bookedTimes,
+    error: null
+  }
+}
+
+export async function getBookedIntervals(date: string) {
+  const { data, error } = await supabase
+    .rpc("get_booked_intervals", {
+      p_date: date
+    })
+
+  if (error) {
+    return {
+      intervals: [],
+      error
+    }
+  }
+
+  const intervals = (data ?? []).map(
+    (item: { booking_time: string; duration: number }) => ({
+      time: String(item.booking_time).slice(0, 5),
+      duration: item.duration
+    })
+  )
+
+  return {
+    intervals,
     error: null
   }
 }

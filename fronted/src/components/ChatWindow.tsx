@@ -9,7 +9,8 @@ import BookingConfirmation from "./BookingConfirmation"
 
 import {
   createBooking,
-  getBookedTimes
+  getBookedTimes,
+  getBookedIntervals
 } from "../services/bookingService"
 
 import {
@@ -36,6 +37,7 @@ interface Booking {
   time: string
   customerName: string
   phone: string
+  duration : number
 }
 const allTimes: string[] = [
   "09:00",
@@ -49,6 +51,29 @@ const allTimes: string[] = [
   "17:00",
   "18:00"
 ]
+function timeToMinutes(time: string): number {
+  const [hour, minute] = time.split(":").map(Number)
+
+  return hour * 60 + minute
+}
+
+function hasTimeOverlap(
+  newTime: string,
+  newDuration: number,
+  existingTime: string,
+  existingDuration: number
+): boolean {
+  const newStart = timeToMinutes(newTime)
+  const newEnd = newStart + newDuration
+
+  const existingStart = timeToMinutes(existingTime)
+  const existingEnd = existingStart + existingDuration
+
+  return newStart < existingEnd && newEnd > existingStart
+}
+
+
+
 
 function ChatWindow() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -68,7 +93,8 @@ function ChatWindow() {
     day: "",
     time: "",
     customerName: "",
-    phone: ""
+    phone: "",
+    duration: 0
   })
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -160,7 +186,9 @@ function handleCancelBooking() {
     day: "",
     time: "",
     customerName: "",
-    phone: ""
+    phone: "",
+    duration: 0
+
   })
 
   setBookingStep(0)
@@ -213,10 +241,15 @@ else if (bookingStep === 1) {
     response =
       "⚠️ Ese servicio no es válido. Elige una de las opciones disponibles."
   } else {
-    setBooking((prev) => ({
-      ...prev,
-      service: message
-    }))
+   const selectedService = businessData.services.find(
+  (service) => service.name === message
+)
+
+setBooking((prev) => ({
+  ...prev,
+  service: message,
+  duration: selectedService?.duration ?? 0
+}))
 
     response =
       "Perfecto. ¿Qué día deseas reservar? Usa formato DD/MM/AAAA."
@@ -247,31 +280,65 @@ else if (bookingStep === 1) {
   }
 }
       // Guardar hora
-else if (bookingStep === 3) {
+    else if (bookingStep === 3) {
   if (!isValidTimeFormat(message)) {
     response =
       "⚠️ Esa hora no es válida. Escríbela en formato 24 horas. Ejemplo: 15:00."
- } else if (!isWithinBusinessHours(booking.day, message)) {
-  response =
-    "⚠️ Ese horario no está disponible para ese día.\n\n" +
-    "Horario:\n" +
-    "Lunes a viernes: 09:00 - 19:00\n" +
-    "Sábado: 09:00 - 17:00\n" +
-    "Domingo: Cerrado."
+  } else if (!isWithinBusinessHours(booking.day, message)) {
+    response =
+      "⚠️ Ese horario no está disponible para ese día.\n\n" +
+      "Horario:\n" +
+      "Lunes a viernes: 09:00 - 19:00\n" +
+      "Sábado: 09:00 - 17:00\n" +
+      "Domingo: Cerrado."
   } else {
-    setBooking((prev) => ({
-      ...prev,
-      time: message
-    }))
+    const {
+      intervals,
+      error: intervalsError
+    } = await getBookedIntervals(booking.day)
 
-    response = "Perfecto. ¿A nombre de quién hacemos la reserva?"
-    setBookingStep(4)
+    if (intervalsError) {
+      console.error(
+        "Error consultando intervalos:",
+        intervalsError
+      )
+
+      response =
+        "No pude comprobar la disponibilidad. Inténtalo nuevamente."
+    } else {
+      const hasOverlap = intervals.some(
+        (interval: { time: string; duration: number }) =>
+          hasTimeOverlap(
+            message,
+            booking.duration,
+            interval.time,
+            interval.duration
+          )
+      )
+
+      if (hasOverlap) {
+        response =
+          "❌ Esa hora se cruza con otra reserva. Elige otro horario."
+      } else {
+        setBooking((prev) => ({
+          ...prev,
+          time: message
+        }))
+
+        response =
+          "Perfecto. ¿A nombre de quién hacemos la reserva?"
+
+        setBookingStep(4)
+      }
+    }
   }
 }
 
-      // Guardar nombre y confirmar
-     // Guardar nombre y confirmar
-else if (bookingStep === 4) {
+
+
+
+   // Guardar nombre y confirmar
+  else if (bookingStep === 4) {
   if (!isValidCustomerName(message)) {
     response =
       "⚠️ El nombre no es válido. Escribe un nombre de al menos 2 letras y sin números."
