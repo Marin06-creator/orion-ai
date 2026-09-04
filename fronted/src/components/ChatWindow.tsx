@@ -9,7 +9,6 @@ import BookingConfirmation from "./BookingConfirmation"
 
 import {
   createBooking,
-  getBookedTimes,
   getBookedIntervals
 } from "../services/bookingService"
 
@@ -136,12 +135,15 @@ function ChatWindow() {
   if (error) {
     if (error.code === "23505") {
       const {
-        bookedTimes,
-        error: bookedError
-      } = await getBookedTimes(completedBooking.day)
+        intervals,
+        error: intervalsError
+      } = await getBookedIntervals(completedBooking.day)
 
-      if (bookedError) {
-        console.error("Error consultando horarios:", bookedError)
+      if (intervalsError) {
+        console.error(
+          "Error consultando disponibilidad:",
+          intervalsError
+        )
 
         const orionMessage: ChatMessage = {
           sender: "orion",
@@ -152,8 +154,11 @@ function ChatWindow() {
         setMessages((prev) => [...prev, orionMessage])
         setBookingStep(3)
       } else {
-        const freeTimes = allTimes.filter(
-          (time) => !bookedTimes.includes(time)
+        const freeTimes = getAvailableTimesByDuration(
+          allTimes,
+          completedBooking.duration,
+          intervals,
+          completedBooking.day
         )
 
         setAvailableTimes(freeTimes)
@@ -161,10 +166,10 @@ function ChatWindow() {
         const orionMessage: ChatMessage = {
           sender: "orion",
           text:
-            `❌ La hora ${completedBooking.time} ya está reservada.\n\n` +
+            `❌ La hora ${completedBooking.time} ya no está disponible.\n\n` +
             `Horarios disponibles:\n` +
             freeTimes.map((time) => `• ${time}`).join("\n") +
-            `\n\nElige otra hora.`
+            `\n\nElige otro horario.`
         }
 
         setMessages((prev) => [...prev, orionMessage])
@@ -178,29 +183,29 @@ function ChatWindow() {
       const orionMessage: ChatMessage = {
         sender: "orion",
         text:
-          "Hubo un problema al guardar la cita. Inténtalo nuevamente."
+          "⚠️ Hubo un problema al guardar la cita. Inténtalo nuevamente."
       }
 
       setMessages((prev) => [...prev, orionMessage])
-      setBookingStep(0)
       setShowConfirmation(false)
     }
   } else {
     const orionMessage: ChatMessage = {
       sender: "orion",
       text:
-        `✅ Cita registrada:\n\n` +
-        `Cliente: ${completedBooking.customerName}\n` +
-        `Teléfono: ${completedBooking.phone}\n` +
-        `Servicio: ${completedBooking.service}\n` +
-        `Fecha: ${completedBooking.day}\n` +
-        `Hora: ${completedBooking.time}` +
+        `✅ ¡Reserva confirmada!\n\n` +
+        `👤 Cliente: ${completedBooking.customerName}\n` +
+        `📱 Teléfono: ${completedBooking.phone}\n` +
+        `✂️ Servicio: ${completedBooking.service}\n` +
+        `📅 Fecha: ${completedBooking.day}\n` +
+        `🕒 Hora: ${completedBooking.time}\n\n` +
         `Gracias por reservar con nosotros. Te esperamos.`
     }
 
     setMessages((prev) => [...prev, orionMessage])
 
     setShowConfirmation(false)
+    setAvailableTimes([])
     setBookingStep(0)
   }
 }

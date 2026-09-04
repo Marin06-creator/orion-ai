@@ -10,7 +10,7 @@ interface BookingData {
 }
 
 export async function createBooking(booking: BookingData) {
-  return await supabase
+  const { data, error } = await supabase
     .from("bookings")
     .insert([
       {
@@ -19,10 +19,24 @@ export async function createBooking(booking: BookingData) {
         booking_date: booking.day,
         booking_time: booking.time,
         phone: booking.phone,
-        duration: booking.phone,
+        duration: booking.duration,
         status: "pending"
       }
     ])
+
+  if (error) {
+    console.error("Error creando reserva:", error)
+
+    return {
+      data: null,
+      error
+    }
+  }
+
+  return {
+    data,
+    error: null
+  }
 }
 
 export async function getBookedTimes(date: string) {
