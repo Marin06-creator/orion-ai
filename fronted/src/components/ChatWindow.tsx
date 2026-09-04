@@ -490,12 +490,30 @@ if (freeTimes.length === 0) {
   }
 
   return (
-    <div className="w-full max-w-2xl bg-gray-900 rounded-2xl shadow-xl p-6">
-      <h2 className="text-2xl font-bold text-blue-400">
-        🤖 ORION Business
-      </h2>
+    <div className="w-full max-w-3xl bg-gray-900 rounded-3xl shadow-2xl p-6 border border-gray-800">
+      <div className="flex items-center justify-between mb-4">
+  <div>
+    <h2 className="text-2xl font-bold text-white">
+      ✂️ {businessData.name}
+    </h2>
 
-      <div className="mt-6 h-96 bg-gray-800 rounded-xl p-4 overflow-y-auto">
+    <p className="text-sm text-gray-400 mt-1">
+      Reservas asistidas por ORION
+    </p>
+  </div>
+
+  <div className="text-right">
+    <p className="text-xs text-green-400 font-semibold">
+      ● En línea
+    </p>
+
+    <p className="text-xs text-gray-400 mt-1">
+      Atención automática
+    </p>
+  </div>
+</div>  
+
+      <div className="mt-6 h-[500px] bg-gray-800/80 rounded-2xl p-4 overflow-y-auto border border-gray-700">
         {messages.map((message, index) => (
           <Message
             key={index}
