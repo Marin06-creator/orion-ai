@@ -297,15 +297,39 @@ setBooking((prev) => ({
         "⚠️ La barbería está cerrada los domingos. Elige otra fecha."
     } else {
 
-    setBooking((prev) => ({
-      ...prev,
-      day: formattedDate
-    }))
+  setBooking((prev) => ({
+  ...prev,
+  day: formattedDate
+}))
 
-    response =
-      "Muy bien. ¿A qué hora deseas la cita? Usa formato 24 horas. Ejemplo: 15:00."
+const {
+  intervals,
+  error: intervalsError
+} = await getBookedIntervals(formattedDate)
 
-    setBookingStep(3)
+if (intervalsError) {
+  console.error(
+    "Error consultando intervalos:",
+    intervalsError
+  )
+
+  response =
+    "No pude comprobar los horarios disponibles. Inténtalo nuevamente."
+} else {
+  const freeTimes = getAvailableTimesByDuration(
+    allTimes,
+    booking.duration,
+    intervals,
+    formattedDate
+  )
+
+  setAvailableTimes(freeTimes)
+
+  response =
+    "🕒 Estos son los horarios disponibles para ese día. Elige uno:"
+  
+  setBookingStep(3)
+}
   }
 }
 }
