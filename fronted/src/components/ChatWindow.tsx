@@ -194,7 +194,8 @@ function ChatWindow() {
         `Teléfono: ${completedBooking.phone}\n` +
         `Servicio: ${completedBooking.service}\n` +
         `Fecha: ${completedBooking.day}\n` +
-        `Hora: ${completedBooking.time}`
+        `Hora: ${completedBooking.time}` +
+        `Gracias por reservar con nosotros. Te esperamos.`
     }
 
     setMessages((prev) => [...prev, orionMessage])
