@@ -71,11 +71,14 @@ export function isValidBookingDate(date: string): boolean {
   }
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+today.setHours(0, 0, 0, 0)
 
-  parsedDate.setHours(0, 0, 0, 0)
+parsedDate.setHours(0, 0, 0, 0)
 
-  return parsedDate >= today
+const maxDate = new Date(today)
+maxDate.setDate(maxDate.getDate() + 30)
+
+return parsedDate >= today && parsedDate <= maxDate
 }
 export function isValidService(
   service: string,
