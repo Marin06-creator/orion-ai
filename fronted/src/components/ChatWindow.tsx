@@ -315,19 +315,26 @@ if (intervalsError) {
 
   response =
     "No pude comprobar los horarios disponibles. Inténtalo nuevamente."
-} else {
-  const freeTimes = getAvailableTimesByDuration(
-    allTimes,
-    booking.duration,
-    intervals,
-    formattedDate
-  )
+} const freeTimes = getAvailableTimesByDuration(
+  allTimes,
+  booking.duration,
+  intervals,
+  formattedDate
+)
 
+if (freeTimes.length === 0) {
+  setAvailableTimes([])
+
+  response =
+    "❌ No quedan horarios disponibles para esa fecha. Elige otro día."
+
+  setBookingStep(2)
+} else {
   setAvailableTimes(freeTimes)
 
   response =
     "🕒 Estos son los horarios disponibles para ese día. Elige uno:"
-  
+
   setBookingStep(3)
 }
   }
