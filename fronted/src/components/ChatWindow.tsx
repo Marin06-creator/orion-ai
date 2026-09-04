@@ -239,15 +239,34 @@ function handleCancelBooking() {
       let response = ""
 
       const text = message.toLowerCase().trim()
+      if (bookingStep > 0 && text === "cancelar") {
+         setBooking({
+            service: "",
+            day: "",
+            time: "",
+            customerName: "",
+            phone: "",
+            duration: 0
+  })
+
+        setAvailableTimes([])
+        setShowConfirmation(false)
+        setBookingStep(0)
+
+          response =
+           "❌ Reserva cancelada. Puedes comenzar una nueva reserva cuando quieras."
+}
 
       // Iniciar una reserva
-      if (
+      else if (
         bookingStep === 0 &&
         (
           text.includes("reservar") ||
           text.includes("cita") ||
           text.includes("agendar") ||
-          text.includes("hacer")
+          text.includes("hacer") ||
+          text.includes("podria") ||
+          text.includes("realizar") 
         )
       ) {
         response =
