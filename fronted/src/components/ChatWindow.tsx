@@ -75,10 +75,11 @@ function hasTimeOverlap(
 function getAvailableTimesByDuration(
   times: string[],
   newDuration: number,
-  intervals: { time: string; duration: number }[]
+  intervals: { time: string; duration: number }[],
+  date: string
 ): string[] {
   return times.filter((time) => {
-    return !intervals.some((interval) =>
+    const overlaps = intervals.some((interval) =>
       hasTimeOverlap(
         time,
         newDuration,
@@ -86,6 +87,14 @@ function getAvailableTimesByDuration(
         interval.duration
       )
     )
+
+    const fitsBusinessHours = isWithinBusinessHours(
+      date,
+      time,
+      newDuration
+    )
+
+    return !overlaps && fitsBusinessHours
   })
 }
 
@@ -335,7 +344,8 @@ setBooking((prev) => ({
   const freeTimes = getAvailableTimesByDuration(
     allTimes,
     booking.duration,
-    intervals
+    intervals,
+    booking.day
   )
 
   setAvailableTimes(freeTimes)
