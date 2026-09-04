@@ -299,7 +299,7 @@ setBooking((prev) => ({
   if (!isValidTimeFormat(message)) {
     response =
       "⚠️ Esa hora no es válida. Escríbela en formato 24 horas. Ejemplo: 15:00."
-  } else if (!isWithinBusinessHours(booking.day, message)) {
+  } else if (!isWithinBusinessHours(booking.day, message, booking.duration)) {
     response =
       "⚠️ Ese horario no está disponible para ese día.\n\n" +
       "Horario:\n" +

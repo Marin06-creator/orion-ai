@@ -5,15 +5,23 @@ export function isValidTimeFormat(time: string): boolean {
 
 export function isWithinBusinessHours(
   date: string,
-  time: string
+  time: string,
+  duration: number
 ): boolean {
   const [year, month, day] = date.split("-").map(Number)
-const parsedDate = new Date(year, month - 1, day)
+
+  const parsedDate = new Date(
+    year,
+    month - 1,
+    day
+  )
 
   const dayOfWeek = parsedDate.getDay()
 
   const [hour, minute] = time.split(":").map(Number)
-  const totalMinutes = hour * 60 + minute
+
+  const startMinutes = hour * 60 + minute
+  const endMinutes = startMinutes + duration
 
   const openingTime = 9 * 60
 
@@ -25,19 +33,25 @@ const parsedDate = new Date(year, month - 1, day)
   // Sábado: 09:00 - 17:00
   if (dayOfWeek === 6) {
     const closingTime = 17 * 60
-    return totalMinutes >= openingTime && totalMinutes <= closingTime
+
+    return (
+      startMinutes >= openingTime &&
+      endMinutes <= closingTime
+    )
   }
 
   // Lunes a viernes: 09:00 - 19:00
   const closingTime = 19 * 60
 
-  return totalMinutes >= openingTime && totalMinutes <= closingTime
+  return (
+    startMinutes >= openingTime &&
+    endMinutes <= closingTime
+  )
 }
 export function isValidDateFormat(date: string): boolean {
   const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/
   return dateRegex.test(date)
 }
-
 export function isValidBookingDate(date: string): boolean {
   if (!isValidDateFormat(date)) {
     return false
