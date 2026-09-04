@@ -19,7 +19,8 @@ import {
   isValidBookingDate,
   isValidService,
   isValidCustomerName,
-  isValidPhone
+  isValidPhone,
+  isBusinessOpenOnDate
 } from "../utils/bookingValidation"
 
 
@@ -291,6 +292,10 @@ setBooking((prev) => ({
 
     const formattedDate =
       `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+      if (!isBusinessOpenOnDate(formattedDate)) {
+      response =
+        "⚠️ La barbería está cerrada los domingos. Elige otra fecha."
+    } else {
 
     setBooking((prev) => ({
       ...prev,
@@ -302,6 +307,7 @@ setBooking((prev) => ({
 
     setBookingStep(3)
   }
+}
 }
       // Guardar hora
     else if (bookingStep === 3) {

@@ -103,3 +103,17 @@ export function isValidPhone(phone: string): boolean {
 
   return /^\+?\d{8,15}$/.test(cleanPhone)
 }
+export function isBusinessOpenOnDate(date: string): boolean {
+  const [year, month, day] = date.split("-").map(Number)
+
+  const parsedDate = new Date(
+    year,
+    month - 1,
+    day
+  )
+
+  const dayOfWeek = parsedDate.getDay()
+
+  // Domingo
+  return dayOfWeek !== 0
+}
